@@ -1,0 +1,196 @@
+﻿@model WebTranscriptionCore.AttendantViewModel
+
+<script src="~/js/jquery-ui.min.js"></script>
+<script src="~/js/jquery.maskedinput.js"></script>
+
+<p>
+	<a id="btnNewAttendant" href="~/Attendant/Create" class="btn btn-primary" role="button">Novo Orador</a>
+	<a id="btnEditAttendant" class="btn btn-primary" role="button">Editar Orador</a>
+	<a id="btnDeleteAttendant" class="btn btn-primary" role="button">Excluir Orador</a>
+	<button id="btnShowFilter" type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalFilter" style="float:right">Filtros</button>
+</p>
+
+<style>
+	.border {
+		border: 1px solid lightgrey;
+	}
+</style>
+
+<div id="page-inner" class="border">
+
+	@using X.PagedList;
+	@using X.PagedList.Mvc.Core;
+
+	@* Filtros da tela *@
+	@using (Html.BeginForm("Index", "Attendant", FormMethod.Post, new { id = "submitForm" })) {
+		<div id="modalFilter" class="modal" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title">Filtros</h4>
+					</div>
+					<div class="modal-body">
+						<div class="row">
+							<div class="col-md-6">
+								@Html.LabelFor(model => model.NameAttendantFilter)
+								@Html.TextBoxFor(x => x.NameAttendantFilter, new { @class = "form-control", @type = "text" })
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" id="btnClear" class="btn btn-primary pull-left">Limpar</button>
+						<button type="submit" id="btnFilter" class="btn btn-primary">Filtrar</button>
+						<button type="button" id="btnClose" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		@Html.AntiForgeryToken()
+	}
+
+	@* Customização necessária, pois o css do tiny editor desconfigura a grid. *@
+	<style>
+		.TableHead {
+			background-color: #D8D8D8;
+		}
+
+		.gridhead {
+			border-width: 0px 0px 2px 0px;
+			border-color: #DDDDDD;
+		}
+
+		.gridcol {
+			border-width: 0.5px 0px 0.5px 0px;
+			border-color: #DDDDDD;
+		}
+
+		#tableAttendants {
+			margin-bottom: 0px;
+		}
+	</style>
+
+	@* Listagem de Oradores *@
+	<div class="table-responsive">
+		<table id="tableAttendants" class="table">
+			<thead class="TableHead">
+				<tr>
+					<th class="hide">
+					</th>
+					<th class="gridhead">
+						@Html.DisplayName("Nome")
+					</th>
+					<th class="gridhead">
+						@Html.DisplayName("Papel do Orador")
+					</th>
+					<th class="gridhead">
+						@Html.DisplayName("Partido")
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var item in Model.AttendantList) {
+					<tr class="clickable-row" style="cursor:pointer">
+						<td class="hide">
+							@Html.HiddenFor(modelItem => item.Id, new { id = "hfId" })
+						</td>
+						<td class="gridcol">
+							@Html.DisplayFor(modelItem => item.Name)
+						</td>
+						<td class="gridcol">
+							@Html.DisplayFor(modelItem => item.AttendantRole.Name)
+						</td>
+						<td class="gridcol">
+							@Html.DisplayFor(modelItem => item.Party)
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<p style="margin-top:-20px">
+	@Html.PagedListPager((IPagedList)Model.AttendantList, page => Url.Action("Index", new { page, NameAttendantFilter = Model.NameAttendantFilter }))
+</p>
+
+<div class="modal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true" id="ModalAutoTransc">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h5 class="modal-title" id="myModalLabel"></h5>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" id="ModalAutoTranscYes">Sim</button>
+				<button type="button" class="btn btn-primary" id="ModalAutoTranscNo">Não</button>
+				<button type="button" class="btn btn-primary" id="ModalAutoTranscOk">OK</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<p id="rData"></p>
+
+<script>
+	$(document).ready(function () {
+		var AttendantId;
+
+		$('#title').html('Oradores');
+
+		$('#ModalAutoTransc').on('hidden.bs.modal', function () {
+			$("#btnExecute").removeClass("disabled");
+		})
+
+		$("#ModalAutoTranscYes").on("click", function () {
+			$("#btnExecute").removeClass("disabled");
+			$("#ModalAutoTransc").modal('hide');
+		});
+
+		$("#ModalAutoTranscOk").on("click", function () {
+			$("#ModalAutoTransc").modal('hide');
+		});
+
+		$("#ModalAutoTranscNo").on("click", function () {
+			RedirectToTransc();
+		});
+
+		$("#btnClear").click(function (e) {
+			$('#NameAttendantFilter').val('');
+			e.preventDefault();
+		});
+
+		$('#tableAttendants').on('click', '.clickable-row', function (event) {
+			$(this).siblings().children().css("color", "inherit").css("background-color", "inherit");
+			$(this).children().css("color", "#fff").css("background-color", "#428bca");
+			$(this).addClass('selected').siblings().removeClass('selected');
+		});
+
+		function ShowModal(text, yes, no, ok) {
+			document.getElementById("myModalLabel").innerHTML = text;
+			$("#ModalAutoTranscYes").css('visibility', yes ? 'visible' : 'hidden');
+			$("#ModalAutoTranscNo").css('visibility', no ? 'visible' : 'hidden');
+			$("#ModalAutoTranscOk").css('visibility', ok ? 'visible' : 'hidden');
+			$("#ModalAutoTransc").modal('show');
+		}
+
+		$("#btnEditAttendant").click(function () {
+			AttendantId = $(this).parent().parent().find('#tableAttendants tr.selected #hfId').val();
+			if (AttendantId == undefined) {
+				ShowModal('Selecione um orador na listagem.', false, false, true);
+			} else {
+				window.location.href = '/Attendant/Edit?id=' + AttendantId;
+			}
+		});
+
+		$("#btnDeleteAttendant").click(function () {
+			AttendantId = $(this).parent().parent().find('#tableAttendants tr.selected #hfId').val();
+			if (AttendantId == undefined) {
+				ShowModal('Selecione um orador na listagem.', false, false, true);
+			} else {
+				window.location.href = '/Attendant/Delete?id=' + AttendantId;
+			}
+		});
+
+	});
+</script>

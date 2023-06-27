@@ -1,0 +1,10 @@
+pegar id do banco de controle de licensas
+
+SELECT * FROM Customer WHERE Name = '<nome do cliente>'
+
+****************************************************
+
+Inserir Id na tabela SystemConfiguration do banco do Plenário
+
+INSERT INTO SystemConfiguration (Name,Value) VALUES ('Customer_Id', 'colocar_aqui_id_do_cliente_pego')
+

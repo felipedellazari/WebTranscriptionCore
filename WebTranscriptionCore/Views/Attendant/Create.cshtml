@@ -1,0 +1,79 @@
+﻿@model WebTranscriptionCore.AttendantViewModel
+
+
+
+<div id="page-inner" class="border">
+
+
+
+	@using (Html.BeginForm("Create", "Attendant", FormMethod.Post, new { id = "submitForm" })) {
+
+		@Html.AntiForgeryToken()
+
+		<div class="row">
+			<div class="col-md-6">
+				<label>Name</label>
+				@Html.TextBoxFor(x => x.Name, new { @class = "form-control", @type = "text" })
+				<span asp-validation-for="Name" class="text-danger"></span>
+			</div>
+			<div class="col-md-6">
+				<label>Papel do Orador</label>
+				@Html.DropDownListFor(x => x.AttendandRoleId, new SelectList(Model.AttendandRoleList, "Id", "Name"), new { @class = "form-control" })
+				@Html.ValidationMessageFor(model => model.AttendandRoleList, "", new { @class = "text-danger" })
+				<span asp-validation-for="AttendandRoleId" class="text-danger"></span>
+			</div>
+		</div>
+		<div class="row" style="margin-top:10px">
+			<div class="col-md-6">
+				<label>Partido</label>
+				@Html.TextBoxFor(x => x.Party, new { @class = "form-control", @type = "text" })
+			</div>
+		</div>
+		<div class="row" style="margin-top:10px">
+			<div class="col-md-6">
+				<button type="submit" class="btn btn-primary">Salvar</button>
+				<a href="javascript:history.back()" class="btn btn-primary">Cancelar</a>
+			</div>
+		</div>
+	}
+
+</div>
+
+
+	<script>
+		$(document).ready(function () {
+			var AttendantId;
+
+			$('#title').html('Novo Orador');
+
+			$("#btnClear").click(function (e) {
+				$('#NameAttendantFilter').val('');
+				e.preventDefault();
+			});
+
+			$('#tableAttendants').on('click', '.clickable-row', function (event) {
+				$(this).siblings().children().css("color", "inherit").css("background-color", "inherit");
+				$(this).children().css("color", "#fff").css("background-color", "#428bca");
+				$(this).addClass('selected').siblings().removeClass('selected');
+			});
+
+			$("#btnEditAttendant").click(function () {
+				AttendantId = $(this).parent().parent().find('#tableTasks tr.selected #hfId').val();
+				if (AttendantId == undefined) {
+					ShowModal('Selecione um orador na listagem.', false, false, true);
+				} else {
+					window.location.href = '/Attendant/Edit?attendantId=' + AttendantId;
+				}
+			});
+
+			$("#btnDeleteAttendant").click(function () {
+				AttendantId = $(this).parent().parent().find('#tableTasks tr.selected #hfId').val();
+				if (AttendantId == undefined) {
+					ShowModal('Selecione um orador na listagem.', false, false, true);
+				} else {
+					window.location.href = '/Attendant/Delete?attendantId=' + AttendantId;
+				}
+			});
+
+		});
+	</script>

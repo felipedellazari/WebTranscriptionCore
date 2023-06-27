@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+This file is used by the publish/package process of your Web project. You can customize the behavior of this process
+by editing this MSBuild file. In order to learn more about this please visit https://go.microsoft.com/fwlink/?LinkID=208121. 
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_PublishTargetUrl>C:\workspaces\DRSPlenario\Trunk\WebTranscriptionCore\WebTranscriptionCore\bin\Release\netcoreapp3.1\publish\</_PublishTargetUrl>
+    <History>True|2023-05-12T22:34:18.7359518Z;False|2023-05-12T19:24:18.7541604-03:00;False|2023-05-12T19:20:53.7046571-03:00;True|2023-05-12T12:04:22.9119012-03:00;False|2023-05-12T09:18:49.1995323-03:00;True|2023-05-10T14:52:29.6136078-03:00;True|2023-05-09T20:16:29.9583584-03:00;True|2023-05-09T20:08:15.5885258-03:00;True|2023-05-09T15:42:14.2801616-03:00;True|2023-04-26T09:41:46.2880715-03:00;True|2023-04-26T09:18:51.4255783-03:00;True|2023-04-26T09:03:21.2814491-03:00;True|2023-02-28T00:18:57.5468180-03:00;True|2022-12-22T12:40:29.9627522-03:00;True|2022-12-20T16:35:46.0645860-03:00;True|2022-12-20T11:02:08.4423356-03:00;True|2022-12-19T16:12:56.8046503-03:00;True|2022-12-19T14:16:41.3242437-03:00;True|2022-12-19T12:52:40.8071089-03:00;True|2022-12-16T17:16:37.9920727-03:00;True|2022-12-16T12:53:23.7911940-03:00;True|2022-12-15T19:56:10.3100075-03:00;True|2022-12-15T19:18:34.0271384-03:00;True|2022-12-15T12:23:56.1566883-03:00;True|2022-12-13T11:36:00.4360967-03:00;True|2022-12-12T19:28:20.7798386-03:00;True|2022-12-12T11:37:13.9242242-03:00;True|2022-12-12T10:26:42.7588381-03:00;True|2022-12-09T11:25:09.5384189-03:00;True|2022-12-08T12:43:41.6708353-03:00;True|2022-12-06T09:27:21.8084790-03:00;</History>
+  </PropertyGroup>
+</Project>

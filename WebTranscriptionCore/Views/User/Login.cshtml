@@ -1,0 +1,71 @@
+﻿@using WebTranscriptionCore.Models
+@model UserModel
+@{
+	Layout = null;
+}
+<div style="background-color: #e0e0e0"; >
+	@Html.Label("", "Versão: 1.0.6 SL", new { @style = "color:#1C1C1C; font-weight:normal;  " })
+</div>
+<style type="text/css">
+	#holder {
+		background: url(../Images/logo-login.png) no-repeat;
+		background-position: center center;
+		background-color: #e0e0e0;
+	}
+
+	.validation {
+		color: #FF4949
+	}
+</style>
+<div class="up" id="holder">
+</div>
+<div class="down" style="background-color: #1C1C1C; padding-top: 10px">
+	<section id="loginForm">
+		@using (Html.BeginForm("Login", "User", FormMethod.Post, new { @class = "form-horizontal", role = "form", id = "LoginForm" }))
+		{
+			@Html.AntiForgeryToken()
+			<div class="col-md-offset-4 col-lg-offset-4 col-md-8 col-xs-12 col-lg-8 col-sm-12">
+				@Html.ValidationSummary(true, "", new { @class = "text-danger validation", })
+				<div class="form-group col-md-3 col-xs-11 col-lg-3 col-sm-12" style=" margin-left:15px">
+					@Html.LabelFor(m => m.User, new { @class = "control-label", @style = "color:white" })
+					@Html.TextBoxFor(m => m.User, new { @class = "form-control" })
+					@Html.ValidationMessageFor(m => m.User, "", new { @class = "text-danger" })
+				</div>
+				<div class="form-group col-md-2 col-xs-11 col-lg-2 col-sm-12 col-lg-2" style="margin-left:15px">
+					@Html.LabelFor(m => m.Password, new { @class = "control-label", @style = "color:white" })
+					@Html.PasswordFor(m => m.Password, new { @class = "form-control" })
+					@Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+				</div>
+				<div class="form-group col-md-3 col-sm-12 col-xs-12 col-lg-3" style="margin-left:15px;margin-top:32px">
+					<input id="btnLogin" type="submit" value="Entrar" class="btn btn-primary" />
+				</div>
+			</div>
+			@*
+			<div class="col-md-offset-4 col-lg-offset-4 col-md-8 col-xs-12 col-lg-8 col-sm-12">
+				<div class="form-group col-md-12 col-xs-12 col-lg-12 col-sm-12" style=" margin-left:15px">
+					@Html.Label("", "ou", new { @style = "color:#428bca; font-weight:normal" })
+					<input id="lnkRegister" type="submit" value="Registrar-se" class="btn-link" />
+				</div>
+			</div>
+			*@
+		}
+	</section>
+</div>
+<script>
+	$(function () {
+		$("#btnLogin").click(function () {
+			$(this).addClass("disabled");
+		});
+		$('#Password').keypress(function (e) {
+			if (e.which == 13) {
+				$('#LoginForm').submit();
+				return false;
+			}
+		});
+		$("#lnkRegister").click(function (event) {
+			event.preventDefault();
+			window.location.href = '/User/Register';
+		});
+
+	});
+</script>

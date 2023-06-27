@@ -1,0 +1,1 @@
+ALTER TABLE "user" ADD LicenseSerialNumber varchar(40) NULL;

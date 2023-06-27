@@ -1,0 +1,51 @@
+﻿@model WebTranscriptionCore.AttendantViewModel
+
+
+
+<div id="page-inner" class="border">
+
+
+
+	@using (Html.BeginForm("Edit", "Attendant", FormMethod.Post, new { id = "submitForm" })) {
+
+		@Html.AntiForgeryToken()
+
+		<div class="row">
+			<div class="col-md-6">
+				<label>Name</label>
+				@Html.TextBoxFor(x => x.Name, new { @class = "form-control", @type = "text" })
+				<span asp-validation-for="Name" class="text-danger"></span>
+			</div>
+			<div class="col-md-6">
+				<label>Papel do Orador</label>
+				@Html.DropDownListFor(x => x.AttendandRoleId, new SelectList(Model.AttendandRoleList, "Id", "Name"), new { @class = "form-control" })
+				@Html.ValidationMessageFor(model => model.AttendandRoleList, "", new { @class = "text-danger" })
+				<span asp-validation-for="AttendandRoleId" class="text-danger"></span>
+			</div>
+		</div>
+		<div class="row" style="margin-top:10px">
+			<div class="col-md-6">
+				<label>Partido</label>
+				@Html.TextBoxFor(x => x.Party, new { @class = "form-control", @type = "text" })
+			</div>
+		</div>
+		<div class="row" style="margin-top:10px">
+			<div class="col-md-6">
+				<button type="submit" class="btn btn-primary">Salvar</button>
+				<a href="javascript:history.back()" class="btn btn-primary">Cancelar</a>
+			</div>
+		</div>
+
+		@Html.HiddenFor(model => model.Id, new { id = "attendantId" })
+	}
+
+</div>
+
+
+<script>
+	$(document).ready(function () {
+
+		$('#title').html('Editar Orador');
+
+	});
+</script>

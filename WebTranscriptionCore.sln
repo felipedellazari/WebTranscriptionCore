@@ -1,0 +1,66 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31424.327
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebTranscriptionCore", "WebTranscriptionCore\WebTranscriptionCore.csproj", "{F61269F8-F087-48EB-99E6-1C3786BACE55}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AL-SP", "Customization\AL-SP\AL-SP.csproj", "{22459308-3074-45BC-BC22-A1453B694C7E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AL-BA", "AL-BA\AL-BA.csproj", "{80B84842-2733-4DCB-956C-6B8B3FA8A649}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		TSE_DF_DEBUG|Any CPU = TSE_DF_DEBUG|Any CPU
+		TSE_DF_RELEASE|Any CPU = TSE_DF_RELEASE|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F61269F8-F087-48EB-99E6-1C3786BACE55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F61269F8-F087-48EB-99E6-1C3786BACE55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F61269F8-F087-48EB-99E6-1C3786BACE55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F61269F8-F087-48EB-99E6-1C3786BACE55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F61269F8-F087-48EB-99E6-1C3786BACE55}.TSE_DF_DEBUG|Any CPU.ActiveCfg = TSE-DF Debug|Any CPU
+		{F61269F8-F087-48EB-99E6-1C3786BACE55}.TSE_DF_DEBUG|Any CPU.Build.0 = TSE-DF Debug|Any CPU
+		{F61269F8-F087-48EB-99E6-1C3786BACE55}.TSE_DF_RELEASE|Any CPU.ActiveCfg = TSE-DF Release|Any CPU
+		{F61269F8-F087-48EB-99E6-1C3786BACE55}.TSE_DF_RELEASE|Any CPU.Build.0 = TSE-DF Release|Any CPU
+		{22459308-3074-45BC-BC22-A1453B694C7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22459308-3074-45BC-BC22-A1453B694C7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22459308-3074-45BC-BC22-A1453B694C7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22459308-3074-45BC-BC22-A1453B694C7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22459308-3074-45BC-BC22-A1453B694C7E}.TSE_DF_DEBUG|Any CPU.ActiveCfg = TSE-DF Debug|Any CPU
+		{22459308-3074-45BC-BC22-A1453B694C7E}.TSE_DF_DEBUG|Any CPU.Build.0 = TSE-DF Debug|Any CPU
+		{22459308-3074-45BC-BC22-A1453B694C7E}.TSE_DF_RELEASE|Any CPU.ActiveCfg = TSE-DF Release|Any CPU
+		{22459308-3074-45BC-BC22-A1453B694C7E}.TSE_DF_RELEASE|Any CPU.Build.0 = TSE-DF Release|Any CPU
+		{80B84842-2733-4DCB-956C-6B8B3FA8A649}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80B84842-2733-4DCB-956C-6B8B3FA8A649}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80B84842-2733-4DCB-956C-6B8B3FA8A649}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80B84842-2733-4DCB-956C-6B8B3FA8A649}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80B84842-2733-4DCB-956C-6B8B3FA8A649}.TSE_DF_DEBUG|Any CPU.ActiveCfg = TSE-DF Debug|Any CPU
+		{80B84842-2733-4DCB-956C-6B8B3FA8A649}.TSE_DF_DEBUG|Any CPU.Build.0 = TSE-DF Debug|Any CPU
+		{80B84842-2733-4DCB-956C-6B8B3FA8A649}.TSE_DF_RELEASE|Any CPU.ActiveCfg = TSE-DF Debug|Any CPU
+		{80B84842-2733-4DCB-956C-6B8B3FA8A649}.TSE_DF_RELEASE|Any CPU.Build.0 = TSE-DF Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F22E031E-921E-45B8-A76E-AF99E7DED668}
+	EndGlobalSection
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 4
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = http://192.168.0.13:8080/tfs/defaultcollection
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = WebTranscriptionCore\\WebTranscriptionCore.csproj
+		SccProjectName1 = WebTranscriptionCore
+		SccLocalPath1 = WebTranscriptionCore
+		SccProjectUniqueName2 = Customization\\AL-SP\\AL-SP.csproj
+		SccProjectName2 = Customization/AL-SP
+		SccLocalPath2 = Customization\\AL-SP
+		SccProjectUniqueName3 = AL-BA\\AL-BA.csproj
+		SccProjectName3 = AL-BA
+		SccLocalPath3 = AL-BA
+	EndGlobalSection
+EndGlobal

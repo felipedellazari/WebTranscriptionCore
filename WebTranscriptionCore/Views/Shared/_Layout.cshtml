@@ -1,0 +1,83 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DRS-Plenário</title>
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	@*@RenderSection("scripts", required: false)*@
+</head>
+<body>
+	<div id="wrapper">
+
+
+
+
+		@*menu*@
+		<nav class="navbar navbar-default navbar-cls-top " role="navigation" style="margin-bottom: 0">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".sidebar-collapse">
+					<span class="sr-only">Toggle navigation</span><span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<div id="headerLogo" style="width:210px;height:83px;background-color:#3E3E3E;">
+					<a href="~/">
+						<img src="~/Images/logo-sidebar.png"
+							  alt="LOGO"
+							  border="0" style="margin:8% 14.5%" />
+					</a>
+				</div>
+
+			</div>
+			<ul class="nav navbar-nav navbar-left" style="margin-left:30px">
+				<li><h1 id="title"></h1></li>
+			</ul>
+			<ul class="nav navbar-nav navbar-right" style="margin-right:10px">
+				@Html.AntiForgeryToken()
+				<li><a href="#" style="cursor: default;"><span class="glyphicon glyphicon-user"></span>@User.Claims.First(x => x.Type == "userName").Value</a></li>
+				<li><a href="~/User/LogOff"><span class="glyphicon glyphicon-log-out"></span> Sair</a></li>
+			</ul>
+		</nav>
+		<!-- /. NAV TOP  -->
+		<nav class="navbar-default navbar-side" role="navigation">
+			<div id="menucl" class="sidebar-collapse">
+				<ul class="nav" id="main-menu">
+
+					 <li><a href="~/SessionTask">Tarefas</a></li>
+@{
+#if TSE_DF_DEBUG || TSE_DF_RELEASE
+}
+
+					<li><a href="~/Session">Sessões</a></li>
+					 <li><a href="~/Attendant">Oradores</a></li>
+					 <li> 
+						 <a href="#"> Relatórios </a> 
+						 <ul class="nav nav-second-level">
+							<li style="font-size:12px"><a href="~/ReportActivities">Atividades Operadores</a></li>
+							<li style="font-size:12px"><a href="~/ReportAbsence">Ausências</a></li>
+							<li style="font-size:12px"><a href="~/ReportProductivity">Produtividade</a></li>
+							<li style="font-size:12px"><a href="~/ReportPendingActivities">Atividades Pendentes</a></li>
+						</ul>
+					</li>
+@{ 
+#endif
+} 
+
+				</ul>
+			</div>
+
+		</nav>
+		@*fim do menu*@
+
+
+
+
+		<div id="page-wrapper">
+			@RenderBody()
+		</div>
+	</div>
+	<script src="~/js/inApp.js" asp-append-version="true"></script>
+	@RenderSection("scripts", required: false)
+</body>
+</html>

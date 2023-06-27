@@ -1,0 +1,35 @@
+Passo a passo para gerar a versão da transcrição web para cliente. Demais versões proceder diretamente para o deploy.
+
+Solution desktop: 
+	C:\Workspaces\DRSPlenario\Trunk\DRSPlenario\DRSPlenario.sln
+	
+Solution transcrição web:
+	C:\Workspaces\DRSPlenario\Trunk\WebTranscriptionCore\WebTranscriptionCore.sln
+
+Passo a passo para primeira versão:
+	1) Verificar na tabela FlowStep se o cliente possui classses customizadas. As classes customizadas possuem final 'Customization.dll' no campo ClassName.
+	2) Se sim, verificar se elas estão implementadas na solution web. Caso elas não estejam implementadas, é necessário implementá-las seguindo a mesma lógica do desktop.
+	3) Executar no banco de dados o script C:\Workspaces\DRSPlenario\Trunk\WebTranscriptionCore\Scripts\<Oracle> ou <sql server>\Update 001 - tr web.sql.
+	4) Gerar script habilitar as etapas que serão executadas na transcrição web. Esse script deve ser salvo no TFS em C:\Workspaces\DRSPlenario\Trunk\DRSPlenario\Customizations\<sigla_cliente>\Scripts. Exemplo:
+	   UPDATE FlowStep SET WebTranscription = 1 WHERE Id IN (201,202,203)
+	5) Testar todos fluxos do cliente, cadastrando a sessão no desktop, e transcrevendo na web.
+	
+	Deploy:
+	1) Compilar a versão desktop em Release ou Release_Limited x86.
+	2) Gerar instalador e update via inno setup C:\Workspaces\DRSPlenario\Trunk\DRSPlenario\!Setup\<sigla_cliente>.
+	3) Colar o instalador e update em Z:\Produtos\DRSPlenario\<sigla_cliente>.
+	4) Gerar arquivo de script. Colar ele em Z:\Produtos\DRSPlenario\<sigla_cliente>. Nomear ele "script_versão_<numero_versao>.sql" Ele conterá os seguintes scripts:
+		4.1) C:\Workspaces\DRSPlenario\Trunk\WebTranscriptionCore\Scripts\<Oracle> ou <sql server>\Update 001 - tr web.sql. Adicionar esse script somente no primeiro setup do cliente.
+		4.2) Script criado no passo 4 do passo a passo.
+		4.3) Demais scripts que foram gerados após a data (ver data no ChangeLog de release do cliente) da última versão enviada ao cliente.
+	5) Gerar log no arquivo $/DRSPlenario/Trunk/DRSPlenario/Customizations/<sigla_cliente>/Desktop/ChangeLog_Release.txt. Log conterá todas modificações feitas no produto e na customização do cliente que foram feitas após a data da última versão gerada ao cliente. Colar arquivo de log em Z:\Produtos\DRSPlenario\<sigla_cliente>. Após colado, renomear ele para ChangeLog.txt.
+	6) Publicar versão web. Botão direito no mouse na solution, opção "Publish".
+	7) Publicar versão web no IIS.
+	8) Repassar versão ao setor de teste, no seguinte formato:
+		Gerada versão do DRS-Plenário transcrição web para o TSE-DF. Favor proceder com os testes. Após finalizados os testes, colocar os arquivos no Files Kenta, e comunicar o setor de suporte para que seja instalada versão no ambiente de homologação do cliente.
+		Instalador: Z:\Produtos\DRSPlenario\TSE-DF\DRSPlenário_(TSE-DF)_3.0.7.7234.exe 
+		Update: Z:\Produtos\DRSPlenario\TSE-DF\Update_DRSPlenário_(TSE-DF)_3.0.7.7234.exe
+		Script: Z:\Produtos\DRSPlenario\TSE-DF\script_versão_3.0.7.7234.sql
+		ChangeLog: Z:\Produtos\DRSPlenario\TSE-DF\ChangeLog.txt
+		Web: http://wk-fabio3:94
+	9) Fazer check-in dos arquivos pendentes no TFS.

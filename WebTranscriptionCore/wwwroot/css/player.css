@@ -1,0 +1,249 @@
+﻿@font-face {
+   font-family: 'Roboto';
+   font-display: swap;
+   src: url("Roboto-Regular.ttf");
+}
+
+* {
+   padding: 0;
+   border: 0;
+   margin: 0;
+   font-family: 'Roboto', sans-serif;
+   font-size: 14px;
+}
+
+   *, *::before, *::after {
+      /*box-sizing: unset !important;*/
+   }
+
+body {
+   background-color: #F2F1F6 !important;
+}
+
+table {
+   border-collapse: collapse;
+}
+
+td {
+   padding: 10px;
+}
+
+ul {
+   list-style-position: inside;
+}
+
+video {
+   width: 100%;
+   max-height: 100%;
+   object-fit: contain;
+}
+
+a {
+   color: #3D76D7;
+   text-decoration: none;
+}
+
+   a:hover {
+      text-decoration: underline;
+   }
+
+.show {
+   display: block;
+}
+
+.hide {
+   display: none;
+}
+
+.t1 {
+   font-size: 22px;
+   padding: 25px 25px 0px 25px;
+}
+
+.t2 {
+   font-size: 18px;
+   margin-bottom: 10px;
+}
+
+.t3 {
+   font-weight: bold;
+}
+
+.t4 {
+   font-weight: normal;
+}
+
+@media (min-width: 801px) {
+   .block {
+      background-color: white;
+   }
+
+   .top {
+      background-image: url("logo.png"), url(predio.png);
+      background-position: center left, center right;
+      background-repeat: no-repeat;
+      background-size: contain;
+      width: 98%;
+      float: left;
+      margin: 1%;
+      margin-top: 0%;
+      height: 82px;
+   }
+
+   .left {
+      float: left;
+      margin: 0% 0% 1% 1%;
+      padding: 1%;
+      width: 48.5%;
+   }
+
+   .player {
+   }
+
+   .marks {
+      float: right;
+      margin: 0% 1% 1% 0%;
+      padding: 1%;
+      width: 48.5%;
+   }
+
+   .info {
+      padding-top: 10px;
+   }
+
+   .attachments {
+      width: 96%;
+      float: left;
+      margin: 0% 1% 1% 1%;
+      padding: 1%;
+   }
+
+   .commands {
+      width: 96%;
+      float: left;
+      margin: 0% 1% 1% 1%;
+      padding: 1%;
+   }
+
+   #voltar {
+      margin-top: 5px;
+      background: #0066A2;
+      color: white;
+      border-color: #0066A2;
+      border-radius: 4px;
+      border-style: outset;
+      font: bold 15px arial, sans-serif;
+      text-shadow: none;
+      padding: 6px 31px;
+   }
+
+   #rc, .g-recaptcha {
+      float: left;
+      margin-top: 5px;
+      transform: scale(0.90);
+      -webkit-transform: scale(0.90);
+      transform-origin: 0 0;
+      -webkit-transform-origin: 0 0;
+   }
+
+   .downloadButton {
+      float: right;
+      margin-top: 5px;
+      height: 55px;
+      width: 100px;
+   }
+}
+
+@media (max-width: 800px) {
+   .block {
+      background-color: white;
+   }
+
+   .top {
+      background-image: url("logo.png"), url(predio.png);
+      background-position: center left, center right;
+      background-repeat: no-repeat;
+      background-size: contain;
+      width: 98%;
+      margin: 1%;
+      margin-top: 0%;
+      padding: 1%;
+      height: 82px;
+   }
+
+   .left {
+      margin: 0% 1% 1% 1%;
+      padding: 1%;
+      width: 96%;
+   }
+
+   .player {
+   }
+
+   .marks {
+      margin: 0% 1% 1% 1%;
+      padding: 1%;
+      width: 96%;
+   }
+
+   .info {
+      padding-top: 10px;
+   }
+
+   .attachments {
+      width: 96%;
+      margin: 0% 1% 1% 1%;
+      padding: 1%;
+   }
+
+   #rc, .g-recaptcha {
+      margin-top: 5px;
+      transform: scale(0.77);
+      -webkit-transform: scale(0.77);
+      transform-origin: 0 0;
+      -webkit-transform-origin: 0 0;
+   }
+
+   .downloadButton {
+      margin-top: 5px;
+      height: 45px;
+      width: 85px;
+   }
+}
+
+#marks > table > tbody > tr {
+   cursor: pointer;
+}
+
+   #marks > table > tbody > tr:hover {
+      background-color: #F2F1F6;
+   }
+
+   #marks > table > tbody > tr > td:nth-child(2) {
+      padding-left: 23px;
+   }
+
+   #marks > table > tbody > tr.active > td:nth-child(2) {
+      background-image: url("play.png");
+      background-repeat: no-repeat;
+      background-position: left center;
+      background-size: 16px;
+   }
+
+.bg-light {
+   background-color: white !important;
+   height: 80px;
+   /*box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);*/
+}
+
+.navbar-light .navbar-brand {
+   font-size: 22px;
+}
+
+.playerContainer {
+}
+
+table td, table th {
+   border: none !important;
+   padding: 10px;
+}

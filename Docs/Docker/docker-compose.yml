@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  webtranscriptioncore:
+    image: ${DOCKER_REGISTRY-}webtranscriptioncore
+    build:
+      context: .
+      dockerfile: WebTranscriptionCore/Dockerfile

@@ -1,0 +1,12 @@
+Prezado cliente, Bom dia,
+
+  Conforme previsto no contrato TSE N.º 69/2022, será necessária a instalação do DRS-Plenário-Web. Para tal, é necessário que o TSE disponibilize um servidor para que seja feita a instalação dessa aplicação. Segue em anexo os manuais de instalação para servidor Windows e Linux. Fica a critério do TSE escolher o Sistema Operacional. A recomendação é por servidor Windows, devido a facilidade de instalação e manutenção. Caso a preferência do TSE seja por servidor Linux, a aplicação roda da mesma forma.
+  
+  Pré-requisitos (para Windows e Linux):
+  - É necessário que o servidor da aplicação tenha acesso ao banco de dados do DRS-Plenário e ao storage. O banco de dados é necessário para ler os dados da aplicação, e o storage (servidor de armazenamento dos áudios e vídeos) é necessário para disponibilizar o áudio para que seja feita a transcrição.
+  
+  Na seção "Arquitetura" de cada documento é demonstrada a arquitetura da solução e a comunicação entre os serviços.
+
+  Fico no aguardo de um prazo para o TSE disponibilizar esse servidor.
+
+  Para qualquer dúvida, estou à disposição.

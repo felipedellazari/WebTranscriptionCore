@@ -1,0 +1,765 @@
+﻿@model WebTranscriptionCore.SessionTaskViewModel
+
+<script src="~/js/jquery-ui.min.js"></script>
+<script src="~/js/jquery.maskedinput.js"></script>
+
+<div id="loaderLayout" class="loading hidden">GIF LOAD</div>
+<p>
+	<a id="btnExecute" class="btn btn-primary" role="button">Executar Tarefa</a>
+	@*<a id="btnReSend" class="btn btn-primary" role="button">Re-enviar</a>*@
+	<a id="btnReSend" class="btn btn-primary" style="display:none" role="button">Re-enviar</a>
+	<img id="btnReSendWait" style="display:none" src="~/Images/Loading.gif">
+	@*<button id="btnImport" type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalImport">Importar</button>*@
+	<button id="btnShowFilter" type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalFilter" style="float:right">Filtros</button>
+</p>
+
+<style>
+	.border {
+		border: 1px solid lightgrey;
+	}
+</style>
+
+<div id="page-inner" class="border">
+
+	@using X.PagedList;
+	@using X.PagedList.Mvc.Core;
+
+	@* Filtros da tela *@
+	@using (Html.BeginForm(null, null, FormMethod.Post, new { id = "submitForm" })) {
+		<div id="modalFilter" class="modal" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title">Filtros</h4>
+					</div>
+					<div class="modal-body">
+						<div class="row">
+							<div class="col-md-6">
+								@Html.LabelFor(model => model.DateSessionFilter)
+								<div style="display:flex">
+									@Html.TextBoxFor(x => x.DateSessionFilter, "{0:dd/MM/yyyy}", new { @class = "form-control date-picker", @type = "text", @style = "margin-right:5px" })
+								</div>
+								<span id="DateValidation" class="text-danger">Data Inválida.</span>
+							</div>
+							<div class="col-md-6">
+								@Html.LabelFor(model => model.TimeSessionFilter)
+								@Html.TextBoxFor(x => x.TimeSessionFilter, "{0:dd/MM/yyyy}", new { @class = "form-control time-picker", @type = "text" })
+								<span id="TimeValidation" class="text-danger">Hora Inválida.</span>
+							</div>
+						</div>
+						<div class="row" style="margin-top:10px">
+							<div class="col-md-6">
+								@Html.LabelFor(model => model.StatusTaskFilter)
+								@Html.DropDownListFor(x => x.StatusTaskFilter, new SelectList(Model.StatusTaskListFilter, "Id", "Name"), new { @class = "form-control" })
+								@Html.ValidationMessageFor(model => model.StatusTaskFilter, "", new { @class = "text-danger" })
+							</div>
+							<div class="col-md-6">
+								@Html.LabelFor(model => model.UserFilter)
+								@Html.DropDownListFor(x => x.UserFilter, new SelectList(Model.UserFilterListFilter, "Id", "Name"), new { @class = "form-control" })
+								@Html.ValidationMessageFor(model => model.UserFilter, "", new { @class = "text-danger" })
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" id="btnClear" class="btn btn-primary pull-left">Limpar</button>
+						<button type="submit" id="btnFilter" class="btn btn-primary">Filtrar</button>
+						<button type="button" id="btnClose" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		@Html.AntiForgeryToken()
+	}
+
+	@* Modal de importação de docto Word *@
+	<div id="modalImport" class="modal" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">Importar documento Word</h4>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-6">
+							@Html.Label("Arquivo: ")
+							<div style="display:flex">
+								<input id="FileDocto" type="file">
+							</div>
+						</div>
+					</div>
+					<div id="reqFileDocto" class="row" style="display: none">
+						<div class="col-md-6">
+							<div style="display:flex">
+								<span style="color: darkred">Campo obrigatório</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" id="btnImportConfirm" class="btn btn-primary">Ok</button>
+					<button type="button" id="btnClose" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	@* Customização necessária, pois o css do tiny editor desconfigura a grid. *@
+	<style>
+		.TableHead {
+			background-color: #D8D8D8;
+		}
+
+		.gridhead {
+			border-width: 0px 0px 2px 0px;
+			border-color: #DDDDDD;
+		}
+
+		.gridcol {
+			border-width: 0.5px 0px 0.5px 0px;
+			border-color: #DDDDDD;
+		}
+
+		#tableTasks {
+			margin-bottom: 0px;
+		}
+	</style>
+
+	@* Listagem de tarefas *@
+	<div class="table-responsive">
+		<table id="tableTasks" class="table">
+			<thead class="TableHead">
+				<tr>
+					<th class="hide">
+					</th>
+					<th class="gridhead">
+						@Html.DisplayName("Descrição")
+					</th>
+					<th class="gridhead">
+						@Html.DisplayName("Status")
+					</th>
+					<th class="gridhead">
+						@Html.DisplayName("Encarregado")
+					</th>
+					<th class="gridhead">
+						@Html.DisplayName("Data da Sessão")
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var item in Model.SessionTaskList) {
+					<tr class="clickable-row" style="cursor:pointer">
+						<td class="hide">
+							@Html.HiddenFor(modelItem => item.Id, new { id = "hfId" })
+							@Html.HiddenFor(modelItem => item.AutoTranscId, new { id = "hfAutoTranscId" })
+							@Html.HiddenFor(modelItem => item.AllowTranscription, new { id = "hfFlowType" })
+							@Html.HiddenFor(modelItem => item.TranscribedIn, new { id = "hfIsTranscribedInDesktop" })
+							@Html.HiddenFor(modelItem => item.Session.AutoTranscription, new { id = "hfIsSessionAutoTranscription" })
+
+						</td>
+						<td class="gridcol">
+							@Html.DisplayFor(modelItem => item.Description)
+						</td>
+						<td class="gridcol">
+							@Html.DisplayFor(modelItem => item.StatusDesc)
+						</td>
+						<td class="gridcol">
+							@Html.DisplayFor(modelItem => item.AssignedTo)
+						</td>
+						<td class="gridcol">
+							@Html.DisplayFor(modelItem => item.SessionExpectedDate)
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<p style="margin-top:-20px">
+	@Html.PagedListPager((IPagedList)Model.SessionTaskList, page => Url.Action("Index", new { page, DateSessionFilter = Model.DateSessionFilter.HasValue ? Model.DateSessionFilter.Value.ToString("dd/MM/yyyy") : "", TimeSessionFilter = Model.TimeSessionFilter, StatusTaskFilter = Model.StatusTaskFilter, UserFilter = Model.UserFilter }))
+</p>
+
+<div class="modal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true" id="ModalAutoTransc">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h5 class="modal-title" id="myModalLabel"></h5>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" id="ModalAutoTranscYes">Sim</button>
+				<button type="button" class="btn btn-primary" id="ModalAutoTranscNo">Não</button>
+				<button type="button" class="btn btn-primary" id="ModalAutoTranscOk">OK</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<p id="rData"></p>
+
+@Html.Hidden("hfAutoTrancriptionByTask", @Model.AutoTrancriptionByTask)
+
+<script>
+	$(document).ready(function () {
+		var TaskId;
+		var dtSessionOrig;
+		var hrSessionOrig;
+		var statusOrig;
+		var userIdOrig;
+		var continueOnWeb;
+		var autoTranscriptonStatus = 0;
+		var autoTranscId = '';
+		var isTranscribedInDesktop = 0;
+
+		$('#title').html('Tarefas Pendentes');
+
+		if (@Model.ShowReSend == 1) { $("#btnReSend").css('display', 'inline-block'); }
+
+		$('#ModalAutoTransc').on('hidden.bs.modal', function () {
+			$("#btnExecute").removeClass("disabled");
+		})
+
+		$("#ModalAutoTranscYes").on("click", function() {
+			$("#ModalAutoTransc").modal('hide');
+			loaderHidden(false);
+			console.log("linha 217 - autoTranscriptonStatus: " + autoTranscriptonStatus);
+			if (autoTranscriptonStatus === 128) {
+				$.ajax({
+					type: "POST",
+					url: '@Url.Action("SendAutoTransc")',
+                    async: true,
+					data: { taskId: TaskId },
+					beforsend: function () {
+						loaderHidden(false);
+						//toastr.info("Enviando texto. Aguarde...");
+					},
+					success: function (data) {
+						$(autoTranscId).val(data.autotranscid);
+						//alert('autoTranscriptonStatus: status :' + data.status);
+                        //ShowModal(data.message, false, false, true);
+						if (data.status === 4) {
+							loaderHidden(true);
+							RedirectToTransc();
+						} else {
+							//toastr.success(data.message);
+							ShowModal(data.message, false, false, true);
+							loaderHidden(true);
+						}
+					},
+					complete: function () {
+						loaderHidden(true);
+						//loaderHidden(false);
+					},
+
+					error: function () {
+						loaderHidden(true);
+						ShowModal("Erro ao tentar processar a transcrição automática.", false, false, true);
+					}
+				});
+			} else if (autoTranscriptonStatus != 2) {
+				//TODO: Cancelar a transcrição status Queued = 1 || Transcribing = 2
+                RedirectToTransc();
+			}
+
+			autoTranscriptonStatus = 0;
+		});
+
+		$("#ModalAutoTranscOk").on("click", function () {
+            //console.log("linha 240 - ModalAutoTranscOk: ");
+			$("#ModalAutoTransc").modal('hide');
+		});
+
+		$("#ModalAutoTranscNo").on("click", function () {
+			//console.log("linha 245 - ModalAutoTranscNo: ");
+			if (isTranscribedInDesktop != 1) {
+                RedirectToTransc();
+            }
+
+		});
+
+		$(".date-picker").datepicker({
+			dateFormat: 'dd/mm/yy',
+			dayNames: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
+			dayNamesMin: ['D', 'S', 'T', 'Q', 'Q', 'S', 'S', 'D'],
+			dayNamesShort: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+			monthNames: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+			monthNamesShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+			nextText: 'Próximo',
+			prevText: 'Anterior',
+			showOn: "button",
+			buttonText: "",
+			onSelect: function () {
+				ValidateDateSession();
+				EnableTime();
+				$(".date-picker").focus();
+			}
+		});
+
+		$('#modalFilter').on('shown.bs.modal', function () {
+			$(".date-picker").focus();
+		})
+
+		function EnableTime() {
+			if ($(".date-picker").val().replace(new RegExp('_', 'g'), "").replace(new RegExp('/', 'g'), "").length == 8) {
+				$(".time-picker").prop("disabled", false);
+				$(".time-picker").attr("title", "");
+				$(".time-picker").mask('?99:99');
+			}
+			else {
+				$(".time-picker").unmask();
+				$(".time-picker").val("");
+				$(".time-picker").prop("disabled", true);
+				$(".time-picker").attr("title", "Preencha inicialmente o filtro 'Data Sessão'.");
+			}
+			ValidadeTimeSession();
+		}
+
+		$('.date-picker').keyup(function (e) {
+			EnableTime();
+		});
+
+		$('.date-picker').focusout(function (e) {
+			ValidateDateSession();
+		});
+
+		function ValidateDateSession() {
+			if (ValidateDate()) {
+				$('#DateValidation').hide();
+				$("#DateSessionFilter").css("border-color", "#cccccc");
+				$("#btnFilter").prop("disabled", false);
+
+			} else {
+				$('#DateValidation').show();
+				$("#DateSessionFilter").css("border-color", "#a94442");
+				$("#btnFilter").prop("disabled", true);
+			}
+		}
+
+		$('.time-picker').focusout(function (e) {
+			ValidadeTimeSession();
+		});
+
+		function ValidadeTimeSession() {
+			if (ValidateTime()) {
+				$('#TimeValidation').hide();
+				$("#TimeSessionFilter").css("border-color", "#cccccc");
+				$("#btnFilter").prop("disabled", false);
+
+			} else {
+				$('#TimeValidation').show();
+				$("#TimeSessionFilter").css("border-color", "#a94442");
+				$("#btnFilter").prop("disabled", true);
+			}
+		}
+
+		$('#tableTasks').on('click', '.clickable-row', function (event) {
+			$(this).siblings().children().css("color", "inherit").css("background-color", "inherit");
+			$(this).children().css("color", "#fff").css("background-color", "#428bca");
+			$(this).addClass('selected').siblings().removeClass('selected');
+		});
+
+		function RedirectToTransc() {
+			window.location.href = '/Transcription?taskId=' + TaskId;
+		}
+
+		$("#btnExecute").click(function () {
+			TaskId = $(this).parent().parent().find('#tableTasks tr.selected #hfId').val();
+			if (TaskId == undefined) {
+				ShowModal('Selecione uma tarefa na listagem.', false, false, true);
+			}
+
+			var IsSessionAutoTranscription = $(this).parent().parent().find('#tableTasks tr.selected #hfIsSessionAutoTranscription').val();
+            var objItemListSelected = $(this).parent().parent().find('#tableTasks tr.selected');
+            var AutoTrancriptionByTask = $(this).find('#hfAutoTrancriptionByTask').val();
+            autoTranscId = $(this).parent().parent().find('#tableTasks tr.selected #hfAutoTranscId').val();
+			var statusTask = $(this).parent().parent().find('#tableTasks tr.selected')[0].children[2].innerText;
+
+			var flowType = $(this).parent().parent().find('#tableTasks tr.selected #hfFlowType').val();
+			var IsTaskTranscription;
+
+			$.ajax({
+				type: "POST",
+				url: '@Url.Action("UpdateAutoTranscriptionStatus")',
+				data: { id: TaskId },
+				success: function (data) {
+					console.log(data.message);
+				},
+				error: function () {
+					ShowModal("Erro ao verificar status da transcrição automática.", false, false, true);
+				}
+			});
+
+			switch (statusTask) {
+				case 'Ativa':
+
+					if (IsSessionAutoTranscription || @Model.AutoTrancriptionByTask) {
+						//valida stastus
+						$.ajax({
+							type: "POST",
+							url: '@Url.Action("AllowAutoTranscription")',
+							async: false,
+							data: { id: TaskId },
+							beforeSend: function () {
+                                //toastr.info("Validando tarefa. Por favor, aguarde...");
+							},
+							success: function (data) {
+								IsTaskTranscription = data.status;
+								//toastr.success(data.message);
+							},
+							complete: function () {
+								//toastr.success("Tarefa validada");
+							},
+							error: function () {
+								ShowModal("Erro ao verificar status da transcrição.", false, false, true);
+								//toastr.error("Erro ao verificar status da transcrição.");
+                     }
+
+						});
+
+                        if (IsTaskTranscription) {
+							$.ajax({
+								type: "POST",
+								url: '@Url.Action("AutoTranscStatus")',
+                                async: false,
+								data: { id: autoTranscId },
+								beforeSend: function () {
+                                    //toastr.info("Validando status da transcrição automática. Por favor, aguarde...");
+								},
+								success: function (data) {
+									//alert('ATIVA: status :' + data.status);
+									autoTranscriptonStatus = data.status;
+									if (data.status === 4) {
+										RedirectToTransc();
+									}
+									else { //Validação para abrir tarefa sem conclusão da transcrição automática
+										ShowModal(data.message, true, true, false);
+										//toastr.success(data.message);
+									}
+								},
+								complete: function () {
+                                    //toastr.success(data.message);
+								},
+								error: function () {
+									ShowModal("Erro ao verificar status da transcrição.", false, false, true);
+									//toastr.error("Erro ao verificar status da transcrição.");
+								}
+							});
+						} else {
+                            RedirectToTransc();
+						}
+					} else {
+						//Quando não há configuração de transcrição automática
+						RedirectToTransc();
+					}
+
+					break;
+				default: /*Qualquer staus diferente de ativa - Nesta condição não precisa processar transcrição automatica*/
+					$.ajax({
+						type: "POST",
+						url: '@Url.Action("IsTranscribedInDesktop")',
+						data: { id: TaskId },
+						success: function (data) {
+
+							//alert('ATIVA: status :' + data.status);
+							//alert('ATIVA: msg :' + data.message);
+							if (data.status === 1) {
+								isTranscribedInDesktop = 1;
+								/*valida se inciou no desktop
+									Valida se quer perder as configurações*/
+								ShowModal(data.message, true, true, false);
+							} else {
+								/*ja foi aberta tarefa na Web*/
+								RedirectToTransc();
+							}
+						},
+						error: function () {
+							ShowModal("Erro ao verificar origem da tarefa.", false, false, true);
+						}
+					});
+					break;
+			}
+		});
+
+		function ShowModal(text, yes, no, ok) {
+				document.getElementById("myModalLabel").innerHTML = text;
+				$("#ModalAutoTranscYes").css('visibility', yes ? 'visible' : 'hidden');
+				$("#ModalAutoTranscNo").css('visibility', no ? 'visible' : 'hidden');
+				$("#ModalAutoTranscOk").css('visibility', ok ? 'visible' : 'hidden');
+				$("#ModalAutoTransc").modal('show');
+		}
+
+		$("#btnReSend").click(function () {
+			TaskId = $(this).parent().parent().find('#tableTasks tr.selected #hfId').val();
+			if (TaskId == undefined)
+				ShowModal('Selecione uma tarefa na listagem.', false, false, true);
+			else {
+				ShowHideReSend(false);
+				var autoTranscId = $(this).parent().parent().find('#tableTasks tr.selected #hfAutoTranscId');
+				$.ajax({
+					type: "POST",
+					url: '@Url.Action("ResendAutoTransc")',
+					data: { taskId: TaskId },
+					success: function (data) {
+						$(autoTranscId).val(data.autotranscid);
+						ShowHideReSend(true);
+						ShowModal(data.status, false, false, true);
+					},
+					error: function () {
+						ShowHideReSend(true);
+						alert('Erro ao re-enviar Transcrição automática.');
+					}
+				});
+			}
+		});
+
+		function ShowHideReSend(show) {
+			if (show) {
+				$("#btnReSend").removeClass("disabled");
+				$("#btnReSend").text('Re-enviar');
+				$("#btnReSendWait").css('display', 'none');
+			} else {
+				$("#btnReSend").addClass("disabled");
+				$("#btnReSend").text('Re-enviando...');
+				$("#btnReSendWait").css('display', 'inline');
+			}
+		}
+
+		$("#btnClear").click(function (e) {
+			$(".date-picker").unmask();
+			$('.date-picker').val('');
+			$(".date-picker").mask('?99/99/9999');
+			EnableTime();
+			ValidateDateSession();
+			ValidadeTimeSession();
+			$('#StatusTaskFilter').val('2');
+			$('#UserFilter').val( @Model.CurrentUserid );
+			e.preventDefault();
+		});
+
+		$("#btnShowFilter").click(function () {
+			$(".ui-datepicker-trigger").addClass("btn btn-secondary glyphicon glyphicon-calendar").attr('tabindex', '-1');
+
+			$(".time-picker").mask('?99:99');
+			$(".time-picker").attr("data-toggle", "tooltip");
+
+			EnableTime();
+
+			$('#DateValidation').hide();
+			$('#TimeValidation').hide();
+
+			$(".date-picker").mask('?99/99/9999');
+			dtSessionOrig = $('.date-picker').val();
+			hrSessionOrig = $('.time-picker').val();
+			statusOrig = $('#StatusTaskFilter').val();
+			userIdOrig = $('#UserFilter').val();
+		});
+
+		$("#btnClose").click(function () {
+			$(".date-picker").unmask();
+			$('.date-picker').val(dtSessionOrig);
+			ValidateDateSession();
+			$('.time-picker').val(hrSessionOrig);
+			ValidadeTimeSession();
+			EnableTime();
+			$('#StatusTaskFilter').val(statusOrig);
+			$('#UserFilter').val(userIdOrig);
+		});
+
+		$("#btnImport").click(function () {
+			TaskId = $(this).parent().parent().find('#tableTasks tr.selected #hfId').val();
+			if (TaskId == undefined) {
+				ShowModal('Selecione uma tarefa na listagem.', false, false, true);
+				return false;
+			}
+			$('#TaskIdImport').val(TaskId);
+			return true;
+		});
+
+
+		$("#btnImportConfirm").click(function () {
+			if (!CheckFileUpload()) return false;
+			$.ajax({
+				type: "POST",
+				url: '@Url.Action("ExistsTranscription")',
+				data: { taskId: TaskId },
+				success: function (data) {
+					if (data.exists == 1) {
+						if (!confirm('Transcrição já existente. Confirma substituição?')) return false;
+					}
+					let formData = new FormData();
+					formData.append('taskId', TaskId);
+					formData.append('file', $('#FileDocto')[0].files[0]);
+					$.ajax({
+						url: '@Url.Action("FileUpload")',
+						type: 'POST',
+						data: formData,
+						processData: false,
+						contentType: false,
+						success: function (data) {
+							alert('Importação concluída com sucesso.');
+							let url = '@Url.Action("Index", new { page = 1, DateSessionFilter = @Model.DateSessionFilter.HasValue ? @Model.DateSessionFilter.Value.ToString("dd/MM/yyyy") : "", TimeSessionFilter = @Model.TimeSessionFilter, StatusTaskFilter = @Model.StatusTaskFilter, UserFilter = @Model.UserFilter })';
+							url = url.replaceAll("&amp;", "&");
+							window.location.href = url;
+						},
+						error: function (data) {
+							alert('Erro ao salvar documento.');
+							console.log(data);
+						}
+					});
+				},
+				error: function (data) {
+					alert('Erro ao verificar se existe transcrição.');
+					console.log(data);
+				}
+			});
+			return false;
+		});
+
+		$('#FileDocto').on("change", function () {
+			CheckFileUpload();
+		});
+
+		function CheckFileUpload() {
+			if ($("#FileDocto").val()) {
+				$("#reqFileDocto").css("display", "none");
+				return true;
+			} else {
+				$("#reqFileDocto").css("display", "");
+				return false;
+			}
+		}
+
+		function ValidateDate() {
+			var dateText = document.getElementById("DateSessionFilter");
+			if (dateText.value.replace(new RegExp('_', 'g'), "").replace(new RegExp('/', 'g'), "").length == 0) return true;
+			if (dateText.value.replace(new RegExp('_', 'g'), "").replace(new RegExp('/', 'g'), "").length < 8) return false;
+			if (dateText) {
+				try {
+					var errorMessage = "";
+					var splitComponents = dateText.value.split('/');
+					if (splitComponents.length > 0) {
+						var day = parseInt(splitComponents[0]);
+						var month = parseInt(splitComponents[1]);
+						var year = parseInt(splitComponents[2]);
+
+						if (isNaN(day) || isNaN(month) || isNaN(year)) {
+							errorMessage = "The day, month and year need to be numbers";
+						}
+
+						if (day <= 0 || month <= 0 || year <= 0) {
+							errorMessage = "The day, month and year need to be positive values greater than 0";
+						}
+
+						if (month > 12) {
+							errorMessage = "The month cannot be greater than 12.";
+						}
+
+						if (errorMessage == "") {
+							// assuming no leap year by default
+							var daysPerMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+							if (year % 4 == 0) {
+								// current year is a leap year
+								daysPerMonth[1] = 29;
+							}
+
+							if (day > daysPerMonth[month - 1]) {
+								errorMessage = "Number of days are more than those allowed for the month";
+							}
+
+							if (year < 1000) {
+								errorMessage = "Ano inválido";
+							}
+
+						}
+					} else {
+						errorMessage = "Please enter the date in dd/mm/yyyy format";
+					}
+
+					if (errorMessage) {
+						return false;
+					}
+				} catch (e) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		function ValidateTime() {
+			var dateText = document.getElementById("TimeSessionFilter");
+			if (dateText.value.replace(new RegExp('_', 'g'), "").replace(new RegExp(':', 'g'), "").length == 0) return true;
+			if (dateText.value.replace(new RegExp('_', 'g'), "").replace(new RegExp(':', 'g'), "").length < 4) return false;
+			if (dateText) {
+				try {
+					var errorMessage = "";
+					var splitComponents = dateText.value.split(':');
+					if (splitComponents.length > 0) {
+						var hour = parseInt(splitComponents[0]);
+						var min = parseInt(splitComponents[1]);
+
+						if (isNaN(hour) || isNaN(min)) {
+							errorMessage = "The day, month and year need to be numbers";
+						}
+
+						if (hour < 0 || min < 0) {
+							errorMessage = "The day, month and year need to be positive values greater than 0";
+						}
+
+						if (hour > 23) {
+							errorMessage = "The month cannot be greater than 12.";
+						}
+
+						if (min > 59) {
+							errorMessage = "The month cannot be greater than 12.";
+						}
+
+					} else {
+						errorMessage = "Please enter the date in dd/mm/yyyy format";
+					}
+
+					if (errorMessage) {
+						return false;
+					}
+				} catch (e) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		@*
+		var currentSessionId = "";
+
+		GetSession();
+
+		function GetSession() {
+
+			var url = "/Home/GetCurrentSession";
+			$.get(url, null, function (data) {
+				currentSessionId = data;
+
+			});
+
+		}
+
+		setInterval(function () { ValidateSession(); }, 120000);
+
+		function ValidateSession() {
+
+			var url = "/Home/VerifySession";
+			$.get(url, null, function (data) {
+				if (data != currentSessionId) {
+					window.alert("Sua sessão expirou ou seu usuário foi utilizado\npara acessar a aplicação de um outro local.");
+					window.location.href = '/User/LogOff';
+				}
+			});
+
+		}
+		*@
+
+	});
+</script>

@@ -1,0 +1,335 @@
+﻿@model WebTranscriptionCore.ReportPendingActivitiesViewModel
+
+<script src="~/js/jquery-ui.min.js"></script>
+<script src="~/js/jquery.maskedinput.js"></script>
+
+
+<script>
+	function printData() {
+		var divToPrint = document.getElementById("tableTasks");
+		newWin = window.open("");
+		newWin.document.write(divToPrint.outerHTML);
+		newWin.print();
+		newWin.close();
+	}
+</script>
+
+<p>
+	<a class="btn btn-primary" role="button" onclick="printData()">Imprimir</a>
+	<a id="btnReSend" class="btn btn-primary" style="display:none" role="button">Re-enviar</a>
+	<img id="btnReSendWait" style="display:none" src="~/Images/Loading.gif">
+	@*<button id="btnImport" type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalImport">Importar</button>*@
+	<button id="btnShowFilter" type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalFilter" style="float:right">Filtros</button>
+</p>
+
+<style>
+	.border {
+		border: 1px solid lightgrey;
+	}
+</style>
+
+<div id="page-inner" class="border">
+
+	@using X.PagedList;
+	@using X.PagedList.Mvc.Core;
+
+
+
+
+	@* Customização necessária, pois o css do tiny editor desconfigura a grid. *@
+	<style>
+		.TableHead {
+			background-color: #D8D8D8;
+		}
+
+		.gridhead {
+			border-width: 0px 0px 2px 0px;
+			border-color: #DDDDDD;
+		}
+
+		.gridcol {
+			border-width: 0.5px 0px 0.5px 0px;
+			border-color: #DDDDDD;
+		}
+
+		#tableTasks {
+			margin-bottom: 0px;
+		}
+	</style>
+
+
+	@* Listagem de tarefas *@
+	<div class="table-responsive">
+		<table id="tableTasks" class="table" border="1">
+			<thead class="TableHead">
+				<tr>
+					<th class="gridhead">
+						@Html.DisplayName("Descrição")
+					</th>
+					<th class="gridhead">
+						@Html.DisplayName("Data")
+					</th>
+					<th class="gridhead">
+						@Html.DisplayName("Status")
+					</th>					
+					<th class="gridhead">
+						@Html.DisplayName("Encarregado")
+					</th>				
+				</tr>
+			</thead>
+			<tbody>
+			@if (Model.ReportList != null) {
+				foreach (var item in Model.ReportList)
+				{
+					<tr class="clickable-row" style="cursor:pointer">
+						<td class="gridcol">
+							@Html.DisplayFor(modelItem => item.Descricao)
+						</td>
+						<td class="gridcol">
+							@Html.DisplayFor(modelItem => item.Data_criacao)
+						</td>
+						<td class="gridcol">
+								@Html.DisplayFor(modelItem => item.StatusDesc)
+						</td>							
+						<td class="gridcol">
+							@Html.DisplayFor(modelItem => item.Encarregado)
+						</td>						
+					</tr>
+				}
+			}
+			</tbody>
+
+		</table>
+	</div>
+</div>
+
+
+
+@* Filtros da tela *@
+@using (Html.BeginForm(null, null, FormMethod.Post, new { id = "submitForm" }))
+{
+		<div id="modalFilter" class="modal" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title">Filtros</h4>
+					</div>
+					<div class="modal-body">
+						<div class="row">
+							<div class="col-md-6">
+							@Html.LabelFor(model => model.DateBeginSessionFilter)
+								<div style="display:flex">
+									@Html.TextBoxFor(x => x.DateBeginSessionFilter, "{0:dd/MM/yyyy}", new { @class = "form-control date-picker", @type = "text", @style = "margin-right:5px" })
+								</div>
+
+							</div>
+							<div class="col-md-6">
+								@Html.LabelFor(model => model.DateEndSessionFilter)
+								<div style="display:flex">
+									@Html.TextBoxFor(x => x.DateEndSessionFilter, "{0:dd/MM/yyyy}", new { @class = "form-control date-picker", @type = "text", @style = "margin-right:5px" })
+								</div>
+							</div>
+						<div class="col-md-6">
+							@Html.LabelFor(model => model.UserFilter)
+							@Html.DropDownListFor(x => x.UserFilter, new SelectList(Model.UserFilterListFilter, "Id", "Name"), new { @class = "form-control" })
+							@Html.ValidationMessageFor(model => model.UserFilter, "", new { @class = "text-danger" })
+						</div>
+						</div>
+						<div class="row" style="margin-top:10px">
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" id="btnClear" class="btn btn-primary pull-left">Limpar</button>
+						<button type="submit" id="btnFilter" class="btn btn-primary">Filtrar</button>
+						<button type="button" id="btnClose" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	@Html.AntiForgeryToken()
+}
+
+<script>
+	$(document).ready(function () {
+		var TaskId;
+		var dtSessionOrig;
+		var hrSessionOrig;
+		var statusOrig;
+		var userIdOrig;
+		var continueOnWeb;
+
+		$('#title').html('Relatório de Atividades Pendentes');
+
+		$("#btnClear").click(function (e) {
+			$('#UserFilter').val('-1');
+			$(".date-picker").unmask();
+			$('.date-picker').val('');
+			$(".date-picker").mask('?99/99/9999');
+			ValidateDateSession();
+			e.preventDefault();
+		});
+
+		$(".date-picker").datepicker({
+			dateFormat: 'dd/mm/yy',
+			dayNames: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
+			dayNamesMin: ['D', 'S', 'T', 'Q', 'Q', 'S', 'S', 'D'],
+			dayNamesShort: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+			monthNames: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+			monthNamesShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+			nextText: 'Próximo',
+			prevText: 'Anterior',
+			showOn: "button",
+			buttonText: "",
+			onSelect: function () {
+				ValidateDateSession();
+				EnableTime();
+				$(".date-picker").focus();
+			}
+		});
+
+		$('#modalFilter').on('shown.bs.modal', function () {
+			$(".date-picker").focus();
+		})
+
+		function EnableTime() {
+			if ($(".date-picker").val().replace(new RegExp('_', 'g'), "").replace(new RegExp('/', 'g'), "").length == 8) {
+				$(".time-picker").prop("disabled", false);
+				$(".time-picker").attr("title", "");
+				$(".time-picker").mask('?99:99');
+			}
+			else {
+				$(".time-picker").unmask();
+				$(".time-picker").val("");
+				$(".time-picker").prop("disabled", true);
+				$(".time-picker").attr("title", "Preencha inicialmente o filtro 'Data Sessão'.");
+			}
+			ValidadeTimeSession();
+		}
+
+		$('.date-picker').keyup(function (e) {
+			EnableTime();
+		});
+
+		$('.date-picker').focusout(function (e) {
+			ValidateDateSession();
+		});
+
+		function ValidateDateSession() {
+			var dateBeginText = document.getElementById("DateBeginSessionFilter");
+			var dateEndText = document.getElementById("DateEndSessionFilter");
+
+			if (ValidateDate(dateBeginText)) {
+				$('#DateBeginValidation').hide();
+				$("#DateBeginSessionFilter").css("border-color", "#cccccc");
+				$("#btnFilter").prop("disabled", false);
+
+			} else {
+				$('#DateBeginValidation').show();
+				$("#DateBeginSessionFilter").css("border-color", "#a94442");
+				$("#btnFilter").prop("disabled", true);
+			}
+
+			if (ValidateDate(dateEndText)) {
+				$('#DateEndValidation').hide();
+				$("#DateEndSessionFilter").css("border-color", "#cccccc");
+				$("#btnFilter").prop("disabled", false);
+
+			} else {
+				$('#DateEndValidation').show();
+				$("#DateEndSessionFilter").css("border-color", "#a94442");
+				$("#btnFilter").prop("disabled", true);
+			}
+		}
+
+		$('.time-picker').focusout(function (e) {
+			ValidadeTimeSession();
+		});
+
+		function ValidadeTimeSession() {
+			if (ValidateTime()) {
+				$('#TimeValidation').hide();
+				$("#TimeSessionFilter").css("border-color", "#cccccc");
+				$("#btnFilter").prop("disabled", false);
+
+			} else {
+				$('#TimeValidation').show();
+				$("#TimeSessionFilter").css("border-color", "#a94442");
+				$("#btnFilter").prop("disabled", true);
+			}
+		}
+
+		$("#btnShowFilter").click(function () {
+			$(".ui-datepicker-trigger").addClass("btn btn-secondary glyphicon glyphicon-calendar").attr('tabindex', '-1');
+
+			$(".date-picker").mask('?99/99/9999');
+			dtSessionOrig = $('.date-picker').val();
+		});
+
+		$("#btnClose").click(function () {
+			$(".date-picker").unmask();
+			$('.date-picker').val(dtSessionOrig);
+			ValidateDateSession();
+			$('.time-picker').val(hrSessionOrig);
+			ValidadeTimeSession();
+			EnableTime();
+			$('#StatusTaskFilter').val(statusOrig);
+			$('#UserFilter').val(userIdOrig);
+		});
+
+		function ValidateDate(dateText) {
+			if (dateText.value.replace(new RegExp('_', 'g'), "").replace(new RegExp('/', 'g'), "").length == 0) return true;
+			if (dateText.value.replace(new RegExp('_', 'g'), "").replace(new RegExp('/', 'g'), "").length < 8) return false;
+			if (dateText) {
+				try {
+					var errorMessage = "";
+					var splitComponents = dateText.value.split('/');
+					if (splitComponents.length > 0) {
+						var day = parseInt(splitComponents[0]);
+						var month = parseInt(splitComponents[1]);
+						var year = parseInt(splitComponents[2]);
+
+						if (isNaN(day) || isNaN(month) || isNaN(year)) {
+							errorMessage = "The day, month and year need to be numbers";
+						}
+
+						if (day <= 0 || month <= 0 || year <= 0) {
+							errorMessage = "The day, month and year need to be positive values greater than 0";
+						}
+
+						if (month > 12) {
+							errorMessage = "The month cannot be greater than 12.";
+						}
+
+						if (errorMessage == "") {
+							// assuming no leap year by default
+							var daysPerMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+							if (year % 4 == 0) {
+								// current year is a leap year
+								daysPerMonth[1] = 29;
+							}
+
+							if (day > daysPerMonth[month - 1]) {
+								errorMessage = "Number of days are more than those allowed for the month";
+							}
+
+							if (year < 1000) {
+								errorMessage = "Ano inválido";
+							}
+
+						}
+					} else {
+						errorMessage = "Please enter the date in dd/mm/yyyy format";
+					}
+
+					if (errorMessage) {
+						return false;
+					}
+				} catch (e) {
+					return false;
+				}
+			}
+			return true;
+		}
+	});
+</script>

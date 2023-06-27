@@ -1,0 +1,4 @@
+15/06/2022:
+	- MELHORIA: Adicionada opção de continuar tarefas iniciadas no desktop com possível perda de formatação.
+29/07/2021:
+	- MELHORIA: Implementado controle de acesso por licença.

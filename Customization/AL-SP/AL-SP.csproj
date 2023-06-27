@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+    <Configurations>Debug;Release;TSE-DF Debug;TSE-DF Release;TSE-DF Release</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>WebTranscriptionCore</RootNamespace>
+    <AssemblyName>Kenta.DRSPlenario.AL-SP.Customization</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>C:\Workspaces\DRSPlenario\Trunk\WebTranscriptionCore\WebTranscriptionCore\bin\Debug\netcoreapp3.1</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TSE-DF Debug|AnyCPU'">
+    <OutputPath>C:\Workspaces\DRSPlenario\Trunk\WebTranscriptionCore\WebTranscriptionCore\bin\Debug\netcoreapp3.1</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\WebTranscriptionCore\WebTranscriptionCore.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,328 @@
+﻿@using System.Net
+@model PlaySessionViewModel
+
+@{
+	var useReCaptcha = ViewBag.UseRecaptcha && !string.IsNullOrWhiteSpace(ViewBag.RecaptchaKey);
+	ViewData["Title"] = "DRS3x Player [MP4]";
+}
+<link rel="stylesheet" href="~/css/player.css" />
+
+<div class="header row" style="margin-right: 4px; margin-bottom: 5px;">
+	<p>
+		<a class="btn btn-primary btnFiltros" href="javascript:history.back()" role="button">Voltar</a>
+		<a id="btnIndice" class="btn btn-primary" role="button">Nova Indexação</a>
+	</p>
+</div>
+
+@using (Html.BeginForm("NewIndex", "Session", FormMethod.Post, new { id = "submitForm" })) {
+	<div class="modal" role="dialog" id="ModalNewIndex" style="box-sizing: unset !important;">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title" id="myModalLabel">Nova Indexação</h4>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-6">
+							@Html.LabelFor(model => model.ProcessNumber)
+							@Html.TextBoxFor(x => x.ProcessNumber, new { @class = "form-control", @type = "text" })
+						</div>
+						<div class="col-md-6">
+							@Html.LabelFor(model => model.IndexAttendantId)
+							@Html.DropDownListFor(x => x.IndexAttendantId, new SelectList(Model.IndexAttendantList, "Id", "Name"), new { @class = "form-control" })
+							@Html.ValidationMessageFor(model => model.IndexAttendantId, "", new { @class = "text-danger" })
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-6">
+							@Html.LabelFor(model => model.IndexPresidentetId)
+							@Html.DropDownListFor(x => x.IndexPresidentetId, new SelectList(Model.IndexPresidenteList, "Id", "Name"), new { @class = "form-control" })
+							@Html.ValidationMessageFor(model => model.IndexPresidentetId, "", new { @class = "text-danger" })
+						</div>
+						<div class="col-md-6">
+							@Html.LabelFor(model => model.IndexRelatorId)
+							@Html.DropDownListFor(x => x.IndexRelatorId, new SelectList(Model.IndexRelatorList, "Id", "Name"), new { @class = "form-control" })
+							@Html.ValidationMessageFor(model => model.IndexRelatorId, "", new { @class = "text-danger" })
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-6">
+							@Html.LabelFor(model => model.IndexClasseId)
+							@Html.DropDownListFor(x => x.IndexClasseId, new SelectList(Model.IndexClasseList, "Id", "Name"), new { @class = "form-control" })
+							@Html.ValidationMessageFor(model => model.IndexClasseId, "", new { @class = "text-danger" })
+						</div>
+						<div class="col-md-6">
+							@Html.LabelFor(model => model.IndexRecursoId)
+							@Html.DropDownListFor(x => x.IndexRecursoId, new SelectList(Model.IndexRecursoList, "Id", "Name"), new { @class = "form-control" })
+							@Html.ValidationMessageFor(model => model.IndexRecursoId, "", new { @class = "text-danger" })
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-6">
+							@Html.LabelFor(model => model.IndexMateriaId)
+							@Html.DropDownListFor(x => x.IndexMateriaId, new SelectList(Model.IndexMateriaList, "Id", "Name"), new { @class = "form-control" })
+							@Html.ValidationMessageFor(model => model.IndexMateriaId, "", new { @class = "text-danger" })
+						</div>
+						<div class="col-md-6">
+							@Html.LabelFor(model => model.Observation)
+							@Html.TextBoxFor(x => x.Observation, new { @class = "form-control", @type = "text" })
+						</div>
+					</div>
+					@*<div class="row" style="margin-top:10px">
+						<div class="col-md-6">
+							@Html.LabelFor(model => model.IndexSubject)
+							@Html.TextBoxFor(x => x.IndexSubject, new { @class = "form-control", @type = "text" })
+						</div>
+						<div class="col-md-6">
+							@Html.LabelFor(model => model.IndexStage)
+							@Html.TextBoxFor(x => x.IndexStage, new { @class = "form-control", @type = "text" })
+						</div>
+						<div class="col-md-6">
+							@Html.LabelFor(model => model.IndexSpeechType)
+							@Html.TextBoxFor(x => x.IndexSpeechType, new { @class = "form-control", @type = "text" })
+						</div>
+						<div class="col-md-6">
+							@Html.LabelFor(model => model.IndexConfidential)
+							@Html.CheckBoxFor(x => x.IndexConfidential, new { Class = "form-control", style = "height:25px;text-align: left; width: 25px;" })
+						</div>
+					</div>*@
+				</div>
+				<div class="modal-footer">
+					<input type="reset" name="reset" value="Limpar" class="btn btn-default" />
+					<button type="button" class="btn btn-primary" id="ModalNewIndexCancel">Cancelar</button>
+					<input type="submit" name="submitIndex" value="Ok" class="btn btn-primary" />
+				</div>
+			</div>
+		</div>
+	</div>
+	@Html.HiddenFor(model => model.IndexSessionId, new { id = "indexSessionId" })
+	@Html.HiddenFor(model => model.IndexDuration, new { id = "indexDuration" })
+	@Html.HiddenFor(model => model.IndexOffset, new { id = "indexOffset" })
+	@Html.HiddenFor(model => model.IndexRecordDate, new { id = "indexRecordDate" })
+	@Html.AntiForgeryToken()
+}
+
+<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+
+			@using (Html.BeginForm("DownloadDRS3x", "Audiencia", FormMethod.Post)) {
+				@Html.HiddenFor(x => x.Guid)
+
+				<div class="modal-header" style="text-align: center; display: block;">
+					<h5 class="modal-title" id="exampleModalLabel" style="font-size: 14px">Download da Sessão</h5>
+				</div>
+				<div class="modal-body">
+					<p style="font-size: 22px; text-align: center;">Clique em "Download" para confirmar</p>
+
+					@if (useReCaptcha) {
+						<div id="rc" class="g-recaptcha" data-theme="dark" data-sitekey="@ViewBag.RecaptchaKey" data-callback="EnableDownload" data-expired-callback="DisableDownload">
+						</div>
+					}
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" data-dismiss="modal">Cancelar</button>
+					<button type="submit" value="Download" id="download" class="btn btn-primary" style="@(useReCaptcha ? "display: none" : "")">Download</button>
+				</div>
+
+			}
+
+		</div>
+	</div>
+</div>
+
+
+<div class="modal fade" id="downloadAttachmentsModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+
+			@using (Html.BeginForm("DownloadAttachmentsDRS3x", "Audiencia", FormMethod.Post)) {
+				@Html.HiddenFor(x => x.Guid)
+
+				<div class="modal-header" style="text-align: center; display: block;">
+					<h5 class="modal-title" id="exampleModalLabel" style="font-size: 14px">Download da Sessão</h5>
+				</div>
+				<div class="modal-body">
+					<p style="font-size: 22px; text-align: center;">Clique em "Download" para baixar os anexos</p>
+
+					@if (useReCaptcha) {
+						<div id="rc" class="g-recaptcha" data-theme="dark" data-sitekey="@ViewBag.RecaptchaKey" data-callback="EnableDownload" data-expired-callback="DisableDownload">
+						</div>
+					}
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" data-dismiss="modal">Cancelar</button>
+					<button type="submit" value="Download" class="btn btn-primary" style="@(useReCaptcha ? "display: none" : "")">Download</button>
+				</div>
+
+			}
+
+		</div>
+	</div>
+</div>
+
+<div class="playerContainer">
+	<div id="info" class="block marks">
+		<p class="t2" style="text-align:center"><b>@Model.SessionType.Name</b></p>
+		<p class="t2">Informações da Sessão</p>
+		<table>
+			<tr>
+				<td class="t3">Número:</td>
+				<td class="t3">Data</td>
+			</tr>
+			<tr>
+				<td class="t4" id="ProcessNumber">@Html.DisplayFor(model => model.Number)</td>
+				<td class="t4" id="FinishDate">@Html.DisplayFor(model => model.StartDate)</td>
+			</tr>
+			<tr>
+				<td class="t3">Descrição:</td>
+				<td class="t3">Local de gravação:</td>
+			</tr>
+			<tr>
+				<td class="t4" id="Description">@Html.DisplayFor(model => model.Description)</td>
+				<td class="t4" id="PlaceName">@Html.DisplayFor(model => model.Place.Name)</td>
+			</tr>
+
+			@{
+				var atts = @Model.Indexes.Where(i => i.Attendant != null)
+											 .GroupBy(x => $"{x.Attendant.Attendant?.Name ?? x.Attendant.Name} ({x.Attendant.Attendant?.Role?.Name ?? x.Attendant.Role?.Name})")
+											 .Select(x => new { Attendant = x.Key });
+			}
+
+			@if (atts.Count() > 0) {
+				<tr>
+					<td colspan="2" class="t3">Participantes</td>
+				</tr>
+				@foreach (var item in atts) {
+					<tr>
+						<td colspan="2" class="t4">
+							<ul id="Attendants">• @item.Attendant</ul>
+						</td>
+					</tr>
+				}
+			}
+		</table>
+	</div>
+
+	@if (@ViewBag.HasVideo == true) {
+		<div id="left" class="block left">
+			<div id="player" class="block player">
+				<video controls id="mphtml5" preload="metadata" height="280" class="show"></video>
+			</div>
+		</div>
+
+
+		@* Customização necessária, pois o css do tiny editor desconfigura a grid. *@
+		<style>
+			.TableHead {
+				background-color: #D8D8D8;
+			}
+
+			.gridhead {
+				border-width: 0px 0px 2px 0px;
+				border-color: #DDDDDD;
+			}
+
+			.gridcol {
+				border-width: 0.5px 0px 0.5px 0px;
+				border-color: #DDDDDD;
+			}
+
+			#tableIndexes {
+				margin-bottom: 0px;
+			}
+		</style>
+		<div class="row">
+			<div class="col-md-12">
+				<p class="t2">Indices</p>
+				<div id="marks" class="table-responsive">
+					<table id="tableIndexes" class="table">
+						<thead class="TableHead">
+							<tr>
+								<th class="gridhead">Data/Hora</th>
+								<th class="gridhead">Tempo</th>
+								<th class="gridhead">Nro Processo</th>
+								<th class="gridhead">Recurso</th>
+								<th class="gridhead">Classe</th>
+								<th class="gridhead">Materia</th>
+								<th class="gridhead">Presidente</th>
+								<th class="gridhead">Relator</th>
+								<th class="gridhead">Orador</th>
+								<th class="gridhead">Observação</th>
+							</tr>
+						</thead>
+						@foreach (var mark in Model.Indexes) {
+							<tbody>
+								<tr id="@mark.Id" onclick="PlayMedia(@mark.Id, true);">
+									<td>@mark.RecordDate</td>
+									<td class="t3">@(new TimeSpan(mark.Offset).ToString(@"hh\:mm\:ss"))</td>
+									<td>@mark.ProcessNumber</td>
+									<td>@mark.Recurso.Name</td>
+									<td>@mark.Classe.Name</td>
+									<td>@mark.Materia.Name</td>
+									<td>@mark.Presidente.Name</td>
+									<td>@mark.Relator.Name</td>
+									<td>@mark.Orador.Name</td>
+									<td>@mark.Observation</td>
+								</tr>
+							</tbody>
+						}
+					</table>
+				</div>
+			</div>
+		</div>
+	} else if (@ViewBag.VideoNotFound) {
+		<div id="left" class="block left">
+			<p>O vídeo da Sessão não foi encontrado.</p>
+			<div id="player" class="block player">
+				<video controls id="" height="280" class="show"></video>
+			</div>
+		</div>
+	} else {
+		<div id="left" class="block left">
+			<p>Você não possui permissão de acesso ao vídeo desta Sessão.</p>
+			<div id="player" class="block player">
+				<video controls id="" height="280" class="show"></video>
+			</div>
+		</div>
+	}
+
+</div>
+
+@*<script src="~/js/jquery.js"></script>*@
+<script src="~/js/DRS3x/playerMP4_Single.js" asp-append-version="true"></script>
+
+@section Scripts {
+	@if (useReCaptcha) {
+		<script src='https://www.google.com/recaptcha/api.js?hl=pt-BR'></script>
+	}
+	<script type="text/javascript">
+		$('#title').html('Visualizar Sessão');
+		var idxs = [];
+		@foreach (SessionIndexViewModel idx in Model.Indexes) {
+			@:idxs.push({ id: @idx.Id, offset: @idx.Offset })
+		}
+		start('@Model.Id');
+
+		$(document).ready(function () {
+
+			$("#btnIndice").click(function () {
+				var vid = document.getElementById("mphtml5");
+				vid.pause();
+				$('#indexOffset').val(vid.currentTime);
+				$("#ModalNewIndex").modal('show');
+			});
+
+			$("#ModalNewIndexCancel").click(function () {
+				$("#ModalNewIndex").modal('hide');
+			});
+
+			@if(Model.StartIndexId != 0){
+				@:PlayMedia(@Model.StartIndexId, true);
+			}
+
+		});
+
+	</script>
+}

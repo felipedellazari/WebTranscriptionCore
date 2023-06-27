@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>DRS Audiências</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1, IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="Description" content="Player de vídeo da Kenta">
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+    <link type="text/css" rel="stylesheet" href="src/base.css" />
+</head>
+<body onload="start()">
+    <div class="block top">
+        <p class="t1" id="ProcessTitle"></p><br />
+    </div>
+    <div id="left" class="block left">
+        <div id="player" class="block player">
+            <object id="mpie" width="320" height="280" class="show" classid="clsid:6BF52A52-394A-11D3-B153-00C04F79FAA6" standby="Loading Microsoft® Windows® Media Player components..." type="application/x-oleobject">
+                <param name="AutoStart" value="1">
+                <param name="ShowControls" value="1">
+                <param name="ShowStatusBar" value="1">
+                <param name="Filename" value="src\source.wmv">
+            </object>
+            <video id="mphtml5" height="280" class="hide" preload="metadata" controls></video>
+        </div>
+        <div id="info" class="block info">
+            <p class="t2">Informações da Audiência</p>
+            <table>
+                <tr>
+                    <td class="t3">Nro. Audiência:</td>
+                    <td class="t3">Data</td>
+                </tr>
+                <tr>
+                    <td class="t4" id="ProcessNumber"></td>
+                    <td class="t4" id="ExpectedDate"></td>
+                </tr>
+                <tr>
+                    <td class="t3">Descrição:</td>
+                    <td class="t3">Local:</td>
+                </tr>
+                <tr>
+                    <td class="t4" id="Description"></td>
+                    <td class="t4" id="PlaceName"></td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="t3">Participantes</td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="t4">
+                        <ul id="Attendants"></ul>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="block marks">
+        <p class="t2">Indices</p>
+        <div id="marks"></div>
+    </div>
+    <div class="block attachments">
+        <p class="t2">Anexos</p>
+        <div id="attachments"></div>
+    </div>
+    <script type="text/javascript" src="src/source.knt"></script>
+    <script type="text/javascript" src="src/script.knt"></script>
+</body>
+</html>
